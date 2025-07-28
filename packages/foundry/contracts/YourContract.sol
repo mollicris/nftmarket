@@ -3,6 +3,8 @@ pragma solidity >=0.8.0 <0.9.0;
 
 // Useful for debugging. Remove when deploying to a live network.
 import "forge-std/console.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 // Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
 // import "@openzeppelin/contracts/access/Ownable.sol";
@@ -12,65 +14,51 @@ import "forge-std/console.sol";
  * It also allows the owner to withdraw the Ether in the contract
  * @author BuidlGuidl
  */
-contract YourContract {
-    // State Variables
-    address public immutable owner;
-    string public greeting = "Building Unstoppable Apps!!!";
-    bool public premium = false;
-    uint256 public totalCounter = 0;
-    mapping(address => uint256) public userGreetingCounter;
+contract YourContract is ERC721, Ownable{
 
-    // Events: a way to emit log statements from smart contract that can be listened to by external parties
-    event GreetingChange(address indexed greetingSetter, string newGreeting, bool premium, uint256 value);
-
-    // Constructor: Called once on contract deployment
-    // Check packages/foundry/deploy/Deploy.s.sol
-    constructor(address _owner) {
-        owner = _owner;
+    mapping(string => address) private imageOwner;
+    mapping(string => uint256) private imagePrice;
+    constructor(address initialOwner)
+        ERC721("NFTToken", "N2T")
+        Ownable(initialOwner)
+    {
+        //owner = initialOwner;
+        //console.log("YourContract deployed by:", initialOwner);
     }
-
-    // Modifier: used to define a set of rules that must be met before or after a function is executed
-    // Check the withdraw() function
-    modifier isOwner() {
-        // msg.sender: predefined variable that represents address of the account that called the current function
-        require(msg.sender == owner, "Not the Owner");
-        _;
+    function safeMint(address to, uint256 tokenId) public onlyOwner {
+        _safeMint(to, tokenId);
     }
+     function setImageOwner(string memory imageId, address owner) public onlyOwner {
+        imageOwner[imageId] = owner;
+    }
+    function buyImage(string memory imageId) public payable {
+        //imageOwner[imageId] = address(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720);
+        imagePrice[imageId] = 0.00000001 ether; // Set a default price for the image
+        uint256 price = imagePrice[imageId];
 
-    /**
-     * Function that allows anyone to change the state variable "greeting" of the contract and increase the counters
-     *
-     * @param _newGreeting (string memory) - new greeting to save on the contract
-     */
-    function setGreeting(string memory _newGreeting) public payable {
-        // Print data to the anvil chain console. Remove when deploying to a live network.
+        address seller = imageOwner[imageId];
+         // Clear the owner to prevent re-entrancy
+        require(msg.value >= price, "Not enough Ether sent");
+        require(seller != address(0), "Image not for sale");
 
-        console.logString("Setting new greeting");
-        console.logString(_newGreeting);
+        // Transferir Ether al vendedor
+        (bool sent, ) = seller.call{value: price}("");
+        require(sent, "Failed to send Ether");
 
-        greeting = _newGreeting;
-        totalCounter += 1;
-        userGreetingCounter[msg.sender] += 1;
+        // Transferir la propiedad de la imagen al comprador
+        imageOwner[imageId] = msg.sender;
 
-        // msg.value: built-in global variable that represents the amount of ether sent with the transaction
-        if (msg.value > 0) {
-            premium = true;
-        } else {
-            premium = false;
+         // Si envió más Ether, se le devuelve el excedente
+         if (msg.value > price) {
+          (bool refund, ) = msg.sender.call{value: msg.value - price}("");
+            require(refund, "Refund failed");
         }
-
-        // emit: keyword used to trigger an event
-        emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, msg.value);
     }
 
-    /**
-     * Function that allows the owner to withdraw all the Ether in the contract
-     * The function can only be called by the owner of the contract as defined by the isOwner modifier
-     */
-    function withdraw() public isOwner {
-        (bool success,) = owner.call{ value: address(this).balance }("");
-        require(success, "Failed to send Ether");
-    }
+
+
+
+    
 
     /**
      * Function that allows the contract to receive ETH
