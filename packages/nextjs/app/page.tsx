@@ -46,7 +46,7 @@ const Home: NextPage = () => {
       const response = await fetch(url, options);
       const data = await response.json();
       console.log(data);
-      const resp = uploadMetadataToPinata(data.cid, data.name, "test");
+      const resp = uploadMetadataToPinata(data.data.cid, data.data.name, "test");
       console.log(resp);
     } catch (error) {
       console.error(error);
