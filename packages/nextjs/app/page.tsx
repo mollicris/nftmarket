@@ -46,7 +46,15 @@ const Home: NextPage = () => {
       const response = await fetch(url, options);
       const data = await response.json();
       console.log(data);
-      const resp = uploadMetadataToPinata(data.data.cid, data.data.name, "test");
+      const resp = uploadMetadataToPinata(data.data.cid, data.data.name.replace(/\.jpg$/, ".json"), "test");
+      // try {
+      //   await writeYourContractAsync({
+      //     functionName: "safeMint",
+      //       args: ["adrress",resp],
+      //     });
+      //     } catch (e) {
+      //        console.error("Error mint image:", e);
+      //     }
       console.log(resp);
     } catch (error) {
       console.error(error);
@@ -136,6 +144,7 @@ const Home: NextPage = () => {
       <Address address={connectedAddress}></Address>
       Subir NFT
       <input type="file" className="file-input file-input-ghost" onChange={handleFileChange} />
+      <div></div>
       <button className="btn" onClick={() => upload()}>
         UpLoad
       </button>
