@@ -31,12 +31,6 @@ const Home: NextPage = () => {
     form.append("network", "public");
 
     form.append("file", selectedFile as Blob, selectedFile?.name);
-    // form.append("pinataMetadata",
-    //   JSON.stringify({
-    //     name: selectedFile.name,
-    //   })
-    // )
-    //form.append("name", selectedFile?.name);
 
     const options = {
       method: "POST",
@@ -52,6 +46,8 @@ const Home: NextPage = () => {
       const response = await fetch(url, options);
       const data = await response.json();
       console.log(data);
+      const resp = uploadMetadataToPinata(data.cid, data.name, "test");
+      console.log(resp);
     } catch (error) {
       console.error(error);
     }
@@ -63,6 +59,61 @@ const Home: NextPage = () => {
       Authorization: "Bearer " + process.env.NEXT_PUBLIC_PINATA_JWT,
     },
   };
+
+  async function uploadMetadataToPinata(imageHash: string, name: string, description: string) {
+    const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
+
+    // Construye el objeto de metadatos
+    const metadata = {
+      pinataMetadata: {
+        name: name,
+        keyvalues: {
+          // Puedes añadir metadatos adicionales
+          creator: "CMM",
+          project: "NFTMARKET",
+        },
+      },
+      pinataContent: {
+        description: description,
+        image: server + imageHash,
+        // más campos estándar de NFT
+        name: "NFT de Prueba",
+        attributes: [
+          {
+            trait_type: "Rareza",
+            value: "Común",
+          },
+        ],
+      },
+    };
+
+    const options = {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + process.env.NEXT_PUBLIC_PINATA_JWT,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(metadata), // Convierte el objeto a JSON
+    };
+
+    try {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Error de Pinata: ${errorData.error?.message || response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Subida exitosa:", data);
+      console.log("CID del JSON:", data.IpfsHash);
+
+      return data.IpfsHash;
+    } catch (error) {
+      console.error("Error al subir a Pinata:", error);
+      throw error;
+    }
+  }
 
   useEffect(() => {
     // This effect runs once when the component mounts
@@ -127,7 +178,6 @@ const Home: NextPage = () => {
     </>
   );
 };
-
 export default Home;
 
 interface IPFSFile {
