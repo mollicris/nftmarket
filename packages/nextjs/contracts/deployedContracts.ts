@@ -95,6 +95,19 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getCurrentId",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "isApprovedForAll",
           inputs: [
             {
@@ -116,6 +129,35 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "mintNFT",
+          inputs: [
+            {
+              name: "recipient",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "tokenURI",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "price",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -582,7 +624,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1753931641.json",
+      deploymentFile: "run-1757039277.json",
       deploymentScript: "Deploy.s.sol",
     },
   },
