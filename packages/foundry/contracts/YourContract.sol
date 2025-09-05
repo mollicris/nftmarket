@@ -16,8 +16,14 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  */
 contract YourContract is ERC721, Ownable{
 
+    uint256 private _tokenIds;
+    mapping(uint256 => uint256) private tokenPrices; // Mapea el ID del token a su precio en wei
+
     mapping(string => address) private imageOwner;
     mapping(string => uint256) private imagePrice;
+
+    mapping(uint256 => string) private _tokenURIs;
+
     constructor(address initialOwner)
         ERC721("NFTToken", "N2T")
         Ownable(initialOwner)
@@ -28,6 +34,30 @@ contract YourContract is ERC721, Ownable{
     function safeMint(address to, uint256 tokenId) public onlyOwner {
         _safeMint(to, tokenId);
     }
+
+    function getCurrentId() public view returns (uint256) {
+        return _tokenIds;
+    }
+    
+    function mintNFT(address recipient, string memory tokenURI, uint256 price) 
+        public 
+        onlyOwner 
+        returns (uint256) 
+    {
+        _tokenIds++;
+        uint256 newItemId = _tokenIds;
+        
+        _mint(recipient, newItemId);
+        //_setTokenURI(newItemId, tokenURI);
+        _tokenURIs[newItemId] = tokenURI;
+        
+        if (price > 0) {
+            tokenPrices[newItemId] = price;
+        }
+        
+        return newItemId;
+    }
+
      function setImageOwner(string memory imageId, address owner) public onlyOwner {
         imageOwner[imageId] = owner;
     }
