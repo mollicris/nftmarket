@@ -58,7 +58,7 @@ contract YourContract is ERC721, Ownable{
         return newItemId;
     }
 
-     function setImageOwner(string memory imageId, address owner) public onlyOwner {
+     function setImageOwner(string memory imageId, address owner) public {
         imageOwner[imageId] = owner;
     }
     function buyImage(string memory imageId) public payable {
