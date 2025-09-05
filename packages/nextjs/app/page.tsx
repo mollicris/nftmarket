@@ -129,8 +129,11 @@ const Home: NextPage = () => {
       fetch("https://api.pinata.cloud/v3/files/public", options)
         .then(response => response.json())
         .then(response => {
-          setFiles(response.data.files);
-          console.log(response.data.files);
+          //filtrar solo jpg
+          const images = response.data.files.filter((file: IPFSFile) => file.mime_type?.startsWith("image/"));
+          console.log(images);
+          setFiles(images);
+          console.log(images);
         })
         .catch(err => console.error(err));
     };
@@ -155,7 +158,12 @@ const Home: NextPage = () => {
               {file.mime_type?.startsWith("image/") && (
                 <>
                   <figure>
-                    <img src={`${server}/ipfs/${file.cid}`} alt="Shoes" />
+                    <img
+                      src={`${server}/ipfs/${file.cid}`}
+                      alt="Shoes"
+                      className="object-cover w-full h-48" // Limita la altura y ajusta el ancho
+                      style={{ maxHeight: "12rem" }} // Opcional: refuerza el límite de altura
+                    />
                   </figure>
                   <div className="card-body">
                     <h2 className="card-title">{file.name.replace(/\.jpg$/, "")}</h2>
